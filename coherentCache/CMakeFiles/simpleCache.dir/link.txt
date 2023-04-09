@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -O2 -ggdb -DDEBUG -shared -Wl,-soname,libsimpleCache.so -o libsimpleCache.so CMakeFiles/simpleCache.dir/cache.c.o CMakeFiles/simpleCache.dir/stree.c.o 

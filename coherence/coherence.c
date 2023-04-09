@@ -102,7 +102,8 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
                 = snoopMI(reqType, &ca, currentState, addr, processorNum);
             break;
         case MSI:
-            // TODO: Implement this.
+            nextState
+                = snoopMSI(reqType, &ca, currentState, addr, processorNum);
             break;
         case MESI:
             // TODO: Implement this.
@@ -123,6 +124,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         case DATA_RECV:
         case INVALIDATE:
         case NO_ACTION:
+        case SHARE:
             cacheCallback(ca, processorNum, addr);
             break;
 
@@ -166,7 +168,8 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
             break;
 
         case MSI:
-            // TODO: Implement this.
+            nextState = cacheMSI(is_read, &permAvail, currentState, addr,
+                                processorNum);
             break;
 
         case MESI:
