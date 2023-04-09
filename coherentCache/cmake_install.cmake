@@ -1,4 +1,4 @@
-# Install script for directory: /afs/andrew.cmu.edu/usr3/dbhegde/private/15618/project/coherence_protocol_study/simpleCache
+# Install script for directory: /afs/andrew.cmu.edu/usr3/dbhegde/private/15618/project/coherence_protocol_study/coherentCache
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

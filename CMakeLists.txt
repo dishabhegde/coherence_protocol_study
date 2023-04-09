@@ -16,6 +16,7 @@ add_subdirectory(processor)
 add_subdirectory(coherence)
 add_subdirectory(interconnect)
 add_subdirectory(simpleCache)
+add_subdirectory(coherentCache)
 add_subdirectory(memory)
 
 project(cadss C)

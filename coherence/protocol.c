@@ -65,10 +65,10 @@ cacheMSI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         case MODIFIED:
             *permAvail = 1;
             return MODIFIED;
-        case SHARED:
+        case SHAREDST:
             if (is_read) {
                 *permAvail = 1;
-                return SHARED;
+                return SHAREDST;
             } else {
                 *permAvail = 0;
                 sendBusWr(addr, procNum);
@@ -142,7 +142,7 @@ snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
             sendData(addr, procNum);
             if (reqType == SHARED || reqType == BUSRD) {
                 *ca = SHARE;
-                return SHARED;
+                return SHAREDST;
             } else if (reqType == BUSWR) {
                 *ca = INVALIDATE;
                 return INVALID;
@@ -150,12 +150,12 @@ snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
                 return MODIFIED;
             }
             // indicateShared(addr, procNum); // Needed for E state
-        case SHARED:
+        case SHAREDST:
             if (reqType == BUSWR) {
                 *ca = INVALIDATE;
                 return INVALID;
             } else {
-                return SHARED;
+                return SHAREDST;
             }
         case INVALID_MODIFIED:
             if (reqType == DATA || reqType == SHARED)
@@ -168,7 +168,7 @@ snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
-                return SHARED;
+                return SHAREDST;
             }
             return INVALID_SHARED;
         case SHARED_MODIFIED:

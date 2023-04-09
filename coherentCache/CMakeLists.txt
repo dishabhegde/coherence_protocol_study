@@ -1,3 +1,3 @@
-project(simpleCache)
-add_library(simpleCache SHARED cache.c stree.c)
-target_include_directories(simpleCache PRIVATE ../common)
+project(coherentCache)
+add_library(coherentCache SHARED cache.c stree.c)
+target_include_directories(coherentCache PRIVATE ../common)
