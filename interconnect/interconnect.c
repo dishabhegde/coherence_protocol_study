@@ -170,12 +170,13 @@ int tick()
     {
         assert(pendingRequest != NULL);
         countDown--;
-
+        // printf("countdown %d\n", countDown);
         // If the count-down has elapsed (or there hasn't been a
         // cache-to-cache transfer, the memory will respond with
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
+            printf("Changing to TRANSFERRING_MEMORY\n");
             pendingRequest->currentState = TRANSFERING_MEMORY;
             countDown = 0;
         }

@@ -10,7 +10,7 @@ typedef void (*cacheCallbackFunc)(int, int, int64_t);
 tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
-coherence_scheme cs = MSI;
+coherence_scheme cs = MI;
 coher* self = NULL;
 interconn* inter_sim = NULL;
 cacheCallbackFunc cacheCallback = NULL;
@@ -221,7 +221,7 @@ uint8_t invlReq(uint64_t addr, int processorNum)
     coherence_states currentState, nextState = INVALID;
     cache_action ca;
     uint8_t flush;
-
+    printf(" invalidation req\n");
     if (processorNum < 0 || processorNum >= processorCount)
     {
         // ERROR
@@ -233,6 +233,7 @@ uint8_t invlReq(uint64_t addr, int processorNum)
     switch (cs)
     {
         case MI:
+            printf(" invalidation req\n");
             nextState = INVALID;
             if (currentState != INVALID)
             {
