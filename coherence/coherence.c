@@ -10,7 +10,7 @@ typedef void (*cacheCallbackFunc)(int, int, int64_t);
 tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
-coherence_scheme cs = MI;
+coherence_scheme cs = MSI;
 coher* self = NULL;
 interconn* inter_sim = NULL;
 cacheCallbackFunc cacheCallback = NULL;
@@ -19,6 +19,8 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum);
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 uint8_t invlReq(uint64_t addr, int processorNum);
 void registerCacheInterface(void (*callback)(int, int, int64_t));
+
+// printf("coherence scheme 1 %d\n", cs);
 
 coher* init(coher_sim_args* csa)
 {
@@ -29,10 +31,27 @@ coher* init(coher_sim_args* csa)
         switch (op)
         {
             case 's':
-                cs = atoi(optarg);
-                break;
+                // cs = atoi(optarg);
+                // break;
+                if (strcmp(optarg, "MI") == 0)
+                    cs = MI;
+                else if (strcmp(optarg, "MSI") == 0)
+                    cs = MSI;
+                else if (strcmp(optarg, "MESI") == 0)
+                    cs = MESI;
+                else if (strcmp(optarg, "MOESI") == 0)
+                    cs = MOESI;
+                else if (strcmp(optarg, "MESIF") == 0)
+                    cs = MESIF;
+                else {
+                    fprintf(stderr, "Invalid coherence scheme: %s\n", optarg);
+                    exit(EXIT_FAILURE);
+                }
+            break;
         }
     }
+    // printf("coherence scheme 1 %d\n", cs);
+    // printf("processor count %d \n", processorCount);
 
     if (processorCount < 1 || processorCount > 256)
     {
@@ -95,13 +114,17 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     coherence_states nextState;
     cache_action ca;
 
+    // printf("coherence scheme %d\n", cs);
+
     switch (cs)
     {
         case MI:
+            // printf("addr %x, processor_num %d\n", addr, processorNum);
             nextState
                 = snoopMI(reqType, &ca, currentState, addr, processorNum);
             break;
         case MSI:
+            // printf("addr %x, processor_num %d\n", addr, processorNum);
             nextState
                 = snoopMSI(reqType, &ca, currentState, addr, processorNum);
             break;
