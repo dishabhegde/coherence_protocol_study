@@ -133,7 +133,8 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
                 = snoopMESI(reqType, &ca, currentState, addr, processorNum);
             break;
         case MOESI:
-            // TODO: Implement this.
+            nextState
+                = snoopMOESI(reqType, &ca, currentState, addr, processorNum);
             break;
         case MESIF:
             // TODO: Implement this.
@@ -153,6 +154,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
             break;
 
         default:
+            printf("%d\n", ca);
             assert(0);
     }
 
@@ -202,7 +204,8 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
             break;
 
         case MOESI:
-            // TODO: Implement this.
+            nextState = cacheMOESI(is_read, &permAvail, currentState, addr,
+                                processorNum);
             break;
 
         case MESIF:

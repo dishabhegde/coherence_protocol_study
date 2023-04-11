@@ -137,7 +137,10 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     }
     else if (brt == SHARED && pendingRequest->addr == addr)
     {
+        assert(pendingRequest->currentState == WAITING_MEMORY);
         pendingRequest->shared = 1;
+        pendingRequest->currentState = TRANSFERING_CACHE;
+        countDown = CACHE_TRANSFER;
         return;
     }
     else if (brt == DATA && pendingRequest->addr == addr)
@@ -176,7 +179,7 @@ int tick()
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            // printf("Changing to TRANSFERRING_MEMORY\n");
+            printf("Changing to TRANSFERRING_MEMORY\n");
             pendingRequest->currentState = TRANSFERING_MEMORY;
             countDown = 0;
         }
