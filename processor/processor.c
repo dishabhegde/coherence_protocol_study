@@ -109,7 +109,7 @@ int tick(void)
     bs->si.tick();
     cs->si.tick();
     tickCount++;
-
+    // printf("*********** Tick %d *************\n", tickCount);
     if (tickCount == stallCount)
     {
         printf(
@@ -154,6 +154,7 @@ int tick(void)
         {
             case MEM_LOAD:
             case MEM_STORE:
+                // printf("New memory request proc %d\n", i);
                 pendingMem[i] = 1;
                 cs->memoryRequest(nextOp, i, makeTag(i, memOpTag[i]),
                                   memOpCallback);
