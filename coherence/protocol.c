@@ -726,7 +726,7 @@ snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentStat
                 return MODIFIED;
             } else if (reqType == SHARED) {
                 *ca = DATA_RECV;
-                printf("Snoop - Case invalid_Modified -> modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
+                printf("Snoop - Case invalid_Modified -> dragon shared modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
                 return DRAGON_SHARED_MODIFIED;
             }
             printf("Snoop - Case invalid_Modified -> invalid_modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
