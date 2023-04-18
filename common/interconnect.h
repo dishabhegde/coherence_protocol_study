@@ -10,6 +10,7 @@ typedef enum _bus_req_type {
     BUSWR,
     DATA,
     SHARED,
+    BUSUPDATE,
     MEMORY
 } bus_req_type;
 

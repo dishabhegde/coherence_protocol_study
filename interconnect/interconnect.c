@@ -151,6 +151,14 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         countDown = CACHE_TRANSFER;
         return;
     }
+    else if (brt == BUSUPDATE && pendingRequest->addr == addr)
+    {
+        assert(pendingRequest->currentState == WAITING_MEMORY);
+        pendingRequest->data = 1;
+        pendingRequest->currentState = TRANSFERING_CACHE;
+        countDown = CACHE_TRANSFER;
+        return;
+    }
     else
     {
         assert(brt != SHARED);

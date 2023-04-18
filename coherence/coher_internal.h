@@ -30,7 +30,8 @@ typedef enum _coherence_scheme
     MSI,
     MESI,
     MOESI,
-    MESIF
+    MESIF,
+    DRAGON
 } coherence_scheme;
 
 coherence_states

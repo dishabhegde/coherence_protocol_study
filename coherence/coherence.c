@@ -43,6 +43,8 @@ coher* init(coher_sim_args* csa)
                     cs = MOESI;
                 else if (strcmp(optarg, "MESIF") == 0)
                     cs = MESIF;
+                else if (strcmp(optarg, "Dragon") == 0)
+                    cs = DRAGON;
                 else {
                     fprintf(stderr, "Invalid coherence scheme: %s\n", optarg);
                     exit(EXIT_FAILURE);
@@ -139,6 +141,9 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         case MESIF:
             // TODO: Implement this.
             break;
+        case DRAGON:
+            nextState = snoopDragon(reqType, &ca, currentState, addr, processorNum);
+            break;
         default:
             fprintf(stderr, "Undefined coherence scheme - %d\n", cs);
             break;
@@ -150,6 +155,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         case INVALIDATE:
         case NO_ACTION:
         case SHARE:
+        case UPDATE:
             cacheCallback(ca, processorNum, addr);
             break;
 
@@ -210,6 +216,11 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 
         case MESIF:
             // TODO: Implement this.
+            break;
+        
+        case DRAGON:
+            nextState = cacheDragon(is_read, &permAvail, currentState, addr,
+                                processorNum);
             break;
 
         default:
