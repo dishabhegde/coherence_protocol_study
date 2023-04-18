@@ -20,7 +20,8 @@ typedef enum _cache_action
     NO_ACTION,
     DATA_RECV,
     INVALIDATE,
-    SHARE
+    SHARE,
+    UPDATE
 } cache_action;
 
 typedef struct _coher {

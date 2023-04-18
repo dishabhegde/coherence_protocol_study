@@ -17,7 +17,11 @@ typedef enum _coherence_states
     INVALID_MODIFIED,
     INVALID_SHARED,
     SHARED_MODIFIED,
-    OWNED_MODIFIED
+    OWNED_MODIFIED,
+    EXCLUSIVE_CLEAN,
+    SHARED_CLEAN,
+    DRAGON_SHARED_MODIFIED,
+    SHARED_CLEAN_MODIFIED
 } coherence_states;
 
 typedef enum _coherence_scheme
