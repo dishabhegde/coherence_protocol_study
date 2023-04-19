@@ -94,7 +94,7 @@ void coherCallback(int type, int processorNum, int64_t addr)
     assert(pendReq != NULL);
     assert(processorNum < processorCount);
 
-    if (type == DATA_RECV) {
+    if (type == DATA_RECV || type == UPDATE) {
         if (pendReq->processorNum == processorNum && pendReq->addr == addr)
         {
             pendingRequest* pr = pendReq;

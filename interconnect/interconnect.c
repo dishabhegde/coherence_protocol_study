@@ -3,6 +3,8 @@
 #include <memory.h>
 #include <interconnect.h>
 
+extern traffic;
+
 typedef enum _bus_req_state
 {
     NONE,
@@ -173,13 +175,30 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     }
 }
 
+int pendingRequestCount() {
+    int c = 0;
+    if (pendingRequest == NULL) {
+        return c;
+    }
+    c++;
+    while (pendingRequest->next != NULL) {
+        c++;
+    }
+    return c;
+}
+
 int tick()
 {
     memComp->si.tick();
     
     if (countDown > 0)
     {
-        assert(pendingRequest != NULL);
+        assert(pendingRequest != NULL);    
+        traffic = pendingRequestCount();
+
+        if (traffic > 0) {
+            printf("traffic count: %d\n", traffic);
+        }
         countDown--;
         // printf("countdown %d\n", countDown);
         // If the count-down has elapsed (or there hasn't been a
@@ -187,7 +206,7 @@ int tick()
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            printf("Changing to TRANSFERRING_MEMORY\n");
+            // printf("Changing to TRANSFERRING_MEMORY\n");
             pendingRequest->currentState = TRANSFERING_MEMORY;
             countDown = 0;
         }

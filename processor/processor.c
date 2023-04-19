@@ -15,6 +15,9 @@ branch* bs = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
 
+extern traffic;
+extern sentrequests;
+
 int* pendingMem = NULL;
 int* pendingBranch = NULL;
 int64_t* memOpTag = NULL;
@@ -102,7 +105,7 @@ int tick(void)
     //   for the sample processor, it requests an op
     //   each tick until it reaches a branch or memory op
     //   then it blocks on that op
-
+    sentrequests = 0;
     trace_op* nextOp = NULL;
 
     // Pass along to the branch predictor and cache simulator that time ticked
@@ -175,7 +178,10 @@ int tick(void)
 
         free(nextOp);
     }
-
+    if (sentrequests > 0) {
+        // printf("request count: %d\n", sentrequests);
+    }
+    
     return progress;
 }
 
