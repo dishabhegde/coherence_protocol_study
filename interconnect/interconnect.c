@@ -4,6 +4,7 @@
 #include <interconnect.h>
 
 extern traffic;
+extern if_shared;
 
 typedef enum _bus_req_state
 {
@@ -122,6 +123,7 @@ void registerCoher(coher* cc)
 
 void busReq(bus_req_type brt, uint64_t addr, int procNum)
 {
+    printf("This is interconnect bus request\n");
     if (pendingRequest == NULL)
     {
         assert(brt != SHARED);
@@ -156,7 +158,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     else if (brt == BUSUPDATE && pendingRequest->addr == addr)
     {
         assert(pendingRequest->currentState == WAITING_MEMORY);
-        pendingRequest->data = 1;
+        pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
         countDown = CACHE_TRANSFER;
         return;
@@ -190,14 +192,14 @@ int pendingRequestCount() {
 int tick()
 {
     memComp->si.tick();
-    
+    // printf("interconnect tick \n");
     if (countDown > 0)
     {
         assert(pendingRequest != NULL);    
         traffic = pendingRequestCount();
 
         if (traffic > 0) {
-            printf("traffic count: %d\n", traffic);
+            // printf("traffic count: %d\n", traffic);
         }
         countDown--;
         // printf("countdown %d\n", countDown);
@@ -206,7 +208,7 @@ int tick()
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            // printf("Changing to TRANSFERRING_MEMORY\n");
+            printf("Changing to TRANSFERRING_MEMORY\n");
             pendingRequest->currentState = TRANSFERING_MEMORY;
             countDown = 0;
         }
@@ -230,6 +232,8 @@ int tick()
                         // printf("proc %d\n", i);
                         coherComp->busReq(pendingRequest->brt,
                                           pendingRequest->addr, i);
+                    } else {
+                        if_shared &= ~(1 << pendingRequest->procNum);
                     }
                 }
 
@@ -242,8 +246,11 @@ int tick()
             else if (pendingRequest->currentState == TRANSFERING_MEMORY)
             {
 		// printf("changing brt to %d for %x\n", (pendingRequest->shared == 1) ? SHARED : DATA, pendingRequest->addr);
+                printf("If_shared %d\n", if_shared);
                 bus_req_type brt
                     = (pendingRequest->shared == 1) ? SHARED : DATA;
+                brt
+                    = (if_shared != 0) ? SHARED : brt;
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum);
 
@@ -282,7 +289,7 @@ int tick()
             }
         }
     }
-
+    // if_shared = 0;
     return 0;
 }
 
