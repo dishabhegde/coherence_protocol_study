@@ -211,10 +211,12 @@ int tick()
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            printf("Changing to TRANSFERRING_MEMORY\n");
-            pendingRequest->currentState = TRANSFERING_MEMORY;
-        printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
-            countDown = 0;
+            if(pendingRequest->brt != BUSUPDATE) {
+                printf("Changing to TRANSFERRING_MEMORY\n");
+                pendingRequest->currentState = TRANSFERING_MEMORY;
+                printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
+                countDown = 0;
+            }
         }
 
         if (countDown == 0)
