@@ -630,14 +630,15 @@ cacheDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
                 return SHARED_CLEAN_MODIFIED;
             }
         case DRAGON_SHARED_MODIFIED:
-            *permAvail = 1;
             if (is_read) {
-                printf("Cache - Case Shared_modified - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
+                *permAvail = 1;
+                printf("Cache - Case dragon_Shared_modified - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
                 return DRAGON_SHARED_MODIFIED;
             } else {
+                *permAvail = 0;
                 sendBusUpd(addr, procNum);
-                printf("Cache - Case Shared_modified : Sending BusWr - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
-                return DRAGON_SHARED_MODIFIED;
+                printf("Cache - Case dragon_Shared_modified -> dragon_shared_modified_INT: Sending BusUpdate - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
+                return DRAGON_SHARED_MODIFIED_INT;
             }
         case INVALID_MODIFIED:
             fprintf(stderr, "IM state on %lx, but request %d\n", addr,
@@ -657,6 +658,12 @@ cacheDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
             *permAvail = 0;
             printf("Cache - Case shared_clean_modified - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
             return SHARED_CLEAN_MODIFIED;
+        case DRAGON_SHARED_MODIFIED_INT:
+            fprintf(stderr, "SMI state on %lx, but request %d\n", addr,
+                    is_read);
+            *permAvail = 0;
+            printf("Cache - Case dragon_shared_modified_int - is_read %d, permAvail %d, current_state %d, addr %lx, procNum %d\n", is_read, *permAvail, currentState, addr, procNum);
+            return DRAGON_SHARED_MODIFIED_INT;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n",
                     currentState, addr);
@@ -777,6 +784,15 @@ snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentStat
             }
             if_shared |= 1 << procNum;
             return SHARED_CLEAN_MODIFIED;
+        case DRAGON_SHARED_MODIFIED_INT:
+            if (reqType == SHARED || reqType == BUSUPDATE) {
+                *ca = DATA_RECV;
+                if_shared |= 1 << procNum;
+                printf("Snoop - Case Dragon Shared modified int -> dragon shared modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
+                return DRAGON_SHARED_MODIFIED;
+            }
+            if_shared |= 1 << procNum;
+            return DRAGON_SHARED_MODIFIED_INT;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n",
                     currentState, addr);

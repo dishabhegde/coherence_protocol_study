@@ -131,6 +131,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = WAITING_CACHE;
+        printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", procNum, addr);
         nextReq->addr = addr;
         nextReq->procNum = procNum;
 
@@ -138,12 +139,12 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         countDown = CACHE_DELAY;
 
         return;
-    }
-    else if (brt == SHARED && pendingRequest->addr == addr)
+    } else if (brt == SHARED && pendingRequest->addr == addr)
     {
         assert(pendingRequest->currentState == WAITING_MEMORY);
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
+        printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for SHARED\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
     }
@@ -152,14 +153,15 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         assert(pendingRequest->currentState == WAITING_MEMORY);
         pendingRequest->data = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
+        printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
-    }
-    else if (brt == BUSUPDATE && pendingRequest->addr == addr)
+    } else if (brt == BUSUPDATE && pendingRequest->addr == addr)
     {
-        assert(pendingRequest->currentState == WAITING_MEMORY);
+        assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_CACHE );
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
+        printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for BUSUPDATE\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
     }
@@ -170,6 +172,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = QUEUED;
+        printf("proc %d pendingRequest addr 0x%lx current state -> QUEUED\n", procNum, addr);
         nextReq->addr = addr;
         nextReq->procNum = procNum;
 
@@ -210,6 +213,7 @@ int tick()
         {
             printf("Changing to TRANSFERRING_MEMORY\n");
             pendingRequest->currentState = TRANSFERING_MEMORY;
+        printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
             countDown = 0;
         }
 
@@ -222,6 +226,7 @@ int tick()
                                             pendingRequest->procNum);
 
                 pendingRequest->currentState = WAITING_MEMORY;
+        printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
 		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
                 // The processors will snoop for this request as well.
@@ -283,6 +288,7 @@ int tick()
                 pendingRequest = deqBusRequest(pos);
                 countDown = CACHE_DELAY;
                 pendingRequest->currentState = WAITING_CACHE;
+        printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", pendingRequest->procNum, pendingRequest->addr);
 
                 lastProc = (pos + 1) % processorCount;
                 break;

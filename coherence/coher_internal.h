@@ -21,7 +21,8 @@ typedef enum _coherence_states
     EXCLUSIVE_CLEAN,
     SHARED_CLEAN,
     DRAGON_SHARED_MODIFIED,
-    SHARED_CLEAN_MODIFIED
+    SHARED_CLEAN_MODIFIED,
+    DRAGON_SHARED_MODIFIED_INT
 } coherence_states;
 
 typedef enum _coherence_scheme
