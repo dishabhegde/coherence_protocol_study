@@ -152,11 +152,13 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     switch (ca)
     {
         case DATA_RECV:
+            cacheCallback(ca, processorNum, addr);
+            break;
         case INVALIDATE:
         case NO_ACTION:
         case SHARE:
         case UPDATE:
-            cacheCallback(ca, processorNum, addr);
+            // cacheCallback(ca, processorNum, addr);
             break;
 
         default:

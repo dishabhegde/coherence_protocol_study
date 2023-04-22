@@ -791,6 +791,7 @@ snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentStat
                 printf("Snoop - Case Dragon Shared modified int -> dragon shared modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
                 return DRAGON_SHARED_MODIFIED;
             }
+            printf("Snoop - Case Dragon Shared modified int : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
             if_shared |= 1 << procNum;
             return DRAGON_SHARED_MODIFIED_INT;
         default:

@@ -211,12 +211,13 @@ int tick()
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            if(pendingRequest->brt != BUSUPDATE) {
+            // if(pendingRequest->brt != BUSUPDATE) {
                 printf("Changing to TRANSFERRING_MEMORY\n");
                 pendingRequest->currentState = TRANSFERING_MEMORY;
                 printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 countDown = 0;
-            }
+            // }
+            // countDown = 0;
         }
 
         if (countDown == 0)
@@ -224,11 +225,17 @@ int tick()
             if (pendingRequest->currentState == WAITING_CACHE)
             {
                 // Make a request to memory.
-                countDown = memComp->busReq(pendingRequest->addr,
-                                            pendingRequest->procNum);
+                if(pendingRequest->brt != BUSUPDATE) {
+                    countDown = memComp->busReq(pendingRequest->addr,
+                                                pendingRequest->procNum);
 
-                pendingRequest->currentState = WAITING_MEMORY;
-        printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
+                    pendingRequest->currentState = WAITING_MEMORY;
+                    printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
+                }
+                else {
+                    coherComp->busReq(pendingRequest->brt,
+                                          pendingRequest->addr, pendingRequest->procNum);
+                }
 		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
                 // The processors will snoop for this request as well.
@@ -270,7 +277,7 @@ int tick()
                 if (pendingRequest->shared == 1) {
 		    // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
                     brt = SHARED;
-		}
+		        }
 
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum);
