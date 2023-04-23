@@ -40,24 +40,30 @@ cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
 coherence_states
 snoopMI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum);
+        uint64_t addr, int procNum, int reqProc);
 coherence_states
 cacheMSI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
 coherence_states
 snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum);
+        uint64_t addr, int procNum, int reqProc);
 coherence_states
 cacheMESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
 coherence_states
 snoopMESI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum);
+        uint64_t addr, int procNum, int reqProc);
 coherence_states
 cacheMOESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
 coherence_states
 snoopMOESI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
+        uint64_t addr, int procNum, int reqProc);
+coherence_states
+cacheDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
+coherence_states
+snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentState,
+        uint64_t addr, int procNum, int reqProc);
 
 #endif

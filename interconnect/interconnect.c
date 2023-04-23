@@ -234,7 +234,7 @@ int tick()
                 }
                 else {
                     coherComp->busReq(pendingRequest->brt,
-                                          pendingRequest->addr, pendingRequest->procNum);
+                                          pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
                 }
 		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
@@ -245,7 +245,7 @@ int tick()
                     {
                         // printf("proc %d\n", i);
                         coherComp->busReq(pendingRequest->brt,
-                                          pendingRequest->addr, i);
+                                          pendingRequest->addr, i, pendingRequest->procNum);
                     } else {
                         if_shared &= ~(1 << pendingRequest->procNum);
                     }
@@ -266,7 +266,7 @@ int tick()
                 brt
                     = (if_shared != 0) ? SHARED : brt;
                 coherComp->busReq(brt, pendingRequest->addr,
-                                  pendingRequest->procNum);
+                                  pendingRequest->procNum, pendingRequest->procNum);
 
                 free(pendingRequest);
                 pendingRequest = NULL;
@@ -280,7 +280,7 @@ int tick()
 		        }
 
                 coherComp->busReq(brt, pendingRequest->addr,
-                                  pendingRequest->procNum);
+                                  pendingRequest->procNum, pendingRequest->procNum);
 
                 free(pendingRequest);
                 pendingRequest = NULL;

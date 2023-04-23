@@ -123,7 +123,7 @@ cacheMSI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
 
 coherence_states
 snoopMI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum)
+        uint64_t addr, int procNum, int reqProc)
 {
     *ca = NO_ACTION;
     switch (currentState)
@@ -158,7 +158,7 @@ snoopMI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
 
 coherence_states
 snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum)
+        uint64_t addr, int procNum, int reqProc)
 {
     *ca = NO_ACTION;
     switch (currentState)
@@ -300,7 +300,7 @@ cacheMESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
 
 coherence_states
 snoopMESI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum)
+        uint64_t addr, int procNum, int reqProc)
 {
     *ca = NO_ACTION;
     switch (currentState)
@@ -477,7 +477,7 @@ cacheMOESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
 
 coherence_states
 snoopMOESI(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum)
+        uint64_t addr, int procNum, int reqProc)
 {
     *ca = NO_ACTION;
     switch (currentState)
@@ -675,7 +675,7 @@ cacheDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
 
 coherence_states
 snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentState,
-        uint64_t addr, int procNum)
+        uint64_t addr, int procNum, int reqProc)
 {
     *ca = NO_ACTION;
     switch (currentState)
@@ -785,7 +785,7 @@ snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentStat
             if_shared |= 1 << procNum;
             return SHARED_CLEAN_MODIFIED;
         case DRAGON_SHARED_MODIFIED_INT:
-            if (reqType == SHARED || reqType == BUSUPDATE) {
+            if ((reqType == SHARED || reqType == BUSUPDATE) && reqProc == procNum) {
                 *ca = DATA_RECV;
                 if_shared |= 1 << procNum;
                 // printf("Snoop - Case Dragon Shared modified int -> dragon shared modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);

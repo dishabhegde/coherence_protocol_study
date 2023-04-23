@@ -15,7 +15,7 @@ coher* self = NULL;
 interconn* inter_sim = NULL;
 cacheCallbackFunc cacheCallback = NULL;
 
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum);
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int reqProc, int processorNum);
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 uint8_t invlReq(uint64_t addr, int processorNum);
 void registerCacheInterface(void (*callback)(int, int, int64_t));
@@ -105,7 +105,7 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
     tree_insert(coherStates[processorNum], addr, (void*)nextState);
 }
 
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int reqProc, int processorNum)
 {
     if (processorNum < 0 || processorNum >= processorCount)
     {
@@ -123,26 +123,26 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         case MI:
             // printf("addr %x, processor_num %d\n", addr, processorNum);
             nextState
-                = snoopMI(reqType, &ca, currentState, addr, processorNum);
+                = snoopMI(reqType, &ca, currentState, addr, processorNum, reqProc);
             break;
         case MSI:
             // printf("addr %x, processor_num %d\n", addr, processorNum);
             nextState
-                = snoopMSI(reqType, &ca, currentState, addr, processorNum);
+                = snoopMSI(reqType, &ca, currentState, addr, processorNum, reqProc);
             break;
         case MESI:
             nextState
-                = snoopMESI(reqType, &ca, currentState, addr, processorNum);
+                = snoopMESI(reqType, &ca, currentState, addr, processorNum, reqProc);
             break;
         case MOESI:
             nextState
-                = snoopMOESI(reqType, &ca, currentState, addr, processorNum);
+                = snoopMOESI(reqType, &ca, currentState, addr, processorNum, reqProc);
             break;
         case MESIF:
             // TODO: Implement this.
             break;
         case DRAGON:
-            nextState = snoopDragon(reqType, &ca, currentState, addr, processorNum);
+            nextState = snoopDragon(reqType, &ca, currentState, addr, processorNum, reqProc);
             break;
         default:
             fprintf(stderr, "Undefined coherence scheme - %d\n", cs);
