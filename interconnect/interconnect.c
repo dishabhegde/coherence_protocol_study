@@ -139,8 +139,10 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         countDown = CACHE_DELAY;
 
         return;
-    } else if (brt == SHARED && pendingRequest->addr == addr)
+    } 
+    else if (brt == SHARED && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
     {
+        printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY);
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
@@ -148,23 +150,26 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         countDown = CACHE_TRANSFER;
         return;
     }
-    else if (brt == DATA && pendingRequest->addr == addr)
+    else if (brt == DATA && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
     {
+        printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY);
         pendingRequest->data = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
-    } else if (brt == BUSUPDATE && pendingRequest->addr == addr)
-    {
-        assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_CACHE );
-        pendingRequest->shared = 1;
-        pendingRequest->currentState = TRANSFERING_CACHE;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for BUSUPDATE\n", procNum, addr);
-        countDown = CACHE_TRANSFER;
-        return;
-    }
+    } 
+    // else if (brt == BUSUPDATE && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
+    // {
+    //     printf("pending request state %d\n",pendingRequest->currentState);
+    //     assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_CACHE );
+    //     pendingRequest->shared = 1;
+    //     pendingRequest->currentState = TRANSFERING_CACHE;
+    //     // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for BUSUPDATE\n", procNum, addr);
+    //     countDown = CACHE_TRANSFER;
+    //     return;
+    // }
     else
     {
         assert(brt != SHARED);
@@ -232,10 +237,6 @@ int tick()
                     pendingRequest->currentState = WAITING_MEMORY;
                     // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 }
-                else {
-                    coherComp->busReq(pendingRequest->brt,
-                                          pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
-                }
 		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
                 // The processors will snoop for this request as well.
@@ -255,6 +256,13 @@ int tick()
                 {
 		    // printf("changing brt to DATA for %x\n", pendingRequest->addr);
                     pendingRequest->brt = DATA;
+                }
+                if (pendingRequest->brt == BUSUPDATE) {
+                    coherComp->busReq(pendingRequest->brt,
+                                          pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
+
+                    free(pendingRequest);
+                    pendingRequest = NULL;
                 }
             }
             else if (pendingRequest->currentState == TRANSFERING_MEMORY)
@@ -278,7 +286,8 @@ int tick()
 		    // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
                     brt = SHARED;
 		        }
-
+                printf("snooping own bus request brt %d addr %x procNum %d\n", brt, pendingRequest->addr,
+                                  pendingRequest->procNum);
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
 

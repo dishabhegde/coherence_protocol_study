@@ -105,7 +105,7 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
     tree_insert(coherStates[processorNum], addr, (void*)nextState);
 }
 
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int reqProc, int processorNum)
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int reqProc)
 {
     if (processorNum < 0 || processorNum >= processorCount)
     {
