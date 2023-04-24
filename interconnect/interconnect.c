@@ -172,7 +172,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     // }
     else
     {
-        assert(brt != SHARED);
+        // assert(brt != SHARED);
 
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
@@ -217,7 +217,7 @@ int tick()
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
             // if(pendingRequest->brt != BUSUPDATE) {
-                // printf("Changing to TRANSFERRING_MEMORY\n");
+                printf("Changing to TRANSFERRING_MEMORY\n");
                 pendingRequest->currentState = TRANSFERING_MEMORY;
                 // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 countDown = 0;
@@ -230,7 +230,7 @@ int tick()
             if (pendingRequest->currentState == WAITING_CACHE)
             {
                 // Make a request to memory.
-                if(pendingRequest->brt != BUSUPDATE) {
+                if(pendingRequest->brt != BUSUPDATE || !if_shared) {
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
 
