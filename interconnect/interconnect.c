@@ -13,7 +13,8 @@ typedef enum _bus_req_state
     TRANSFERING_CACHE,
     TRANSFERING_MEMORY,
     WAITING_CACHE,
-    WAITING_MEMORY
+    WAITING_MEMORY,
+    WAITING_UPDATE
 } bus_req_state;
 
 typedef struct _bus_req {
@@ -124,6 +125,10 @@ void registerCoher(coher* cc)
 void busReq(bus_req_type brt, uint64_t addr, int procNum)
 {
     printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
+     if (pendingRequest != NULL)
+    {
+        printf("pendingRequest type is %d\n ", pendingRequest->brt);
+    }
     if (pendingRequest == NULL)
     {
         assert(brt != SHARED);
@@ -140,22 +145,22 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
 
         return;
     } 
-    else if (brt == SHARED && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
+    else if (brt == SHARED && pendingRequest->addr == addr)
     {
         printf("pending request state %d\n",pendingRequest->currentState);
-        assert(pendingRequest->currentState == WAITING_MEMORY);
+        assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for SHARED\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
     }
-    else if (brt == DATA && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
+    else if (brt == DATA && pendingRequest->addr == addr)
     {
         printf("pending request state %d\n",pendingRequest->currentState);
-        assert(pendingRequest->currentState == WAITING_MEMORY);
+        assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->data = 1;
-        pendingRequest->currentState = TRANSFERING_CACHE;
+        pendingRequest->currentState = TRANSFERING_MEMORY;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
@@ -172,7 +177,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     // }
     else
     {
-        // assert(brt != SHARED);
+        assert(brt != SHARED);
 
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
@@ -230,12 +235,15 @@ int tick()
             if (pendingRequest->currentState == WAITING_CACHE)
             {
                 // Make a request to memory.
-                if(pendingRequest->brt != BUSUPDATE || !if_shared) {
+                assert(pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR || pendingRequest->brt == BUSUPDATE);
+                if(pendingRequest->brt != BUSUPDATE) {
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
 
                     pendingRequest->currentState = WAITING_MEMORY;
                     // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
+                } else {
+                    pendingRequest->currentState = WAITING_UPDATE;
                 }
 		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
@@ -321,6 +329,8 @@ int tick()
 // was satisfied by a cache-to-cache transfer.
 int busReqCacheTransfer(uint64_t addr, int procNum)
 {
+
+    printf("cache transfer pendingReqest %p\n",pendingRequest);
     assert(pendingRequest);
 
     if (addr == pendingRequest->addr && procNum == pendingRequest->procNum)
