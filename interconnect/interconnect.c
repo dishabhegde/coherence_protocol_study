@@ -162,7 +162,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         // printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->data = 1;
-        pendingRequest->currentState = TRANSFERING_MEMORY;
+        pendingRequest->currentState = TRANSFERING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         return;
@@ -239,11 +239,11 @@ int tick()
                 // Make a request to memory.
                 assert(pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR || pendingRequest->brt == BUSUPDATE);
                 if(pendingRequest->brt != BUSUPDATE) {
+                    printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
 
                     pendingRequest->currentState = WAITING_MEMORY;
-                    // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 } else {
                     pendingRequest->currentState = WAITING_UPDATE;
                 }
