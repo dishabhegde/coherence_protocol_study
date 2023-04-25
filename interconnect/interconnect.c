@@ -127,7 +127,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
      if (pendingRequest != NULL)
     {
-        printf("pendingRequest type is %d\n ", pendingRequest->brt);
+        // printf("pendingRequest type is %d\n ", pendingRequest->brt);
     }
     if (pendingRequest == NULL)
     {
@@ -147,17 +147,19 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     } 
     else if (brt == SHARED && pendingRequest->addr == addr)
     {
-        printf("pending request state %d\n",pendingRequest->currentState);
+        // printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for SHARED\n", procNum, addr);
-        countDown = CACHE_TRANSFER;
+        if (pendingRequest->brt != BUSUPDATE) {
+            countDown = CACHE_TRANSFER;
+        }
         return;
     }
     else if (brt == DATA && pendingRequest->addr == addr)
     {
-        printf("pending request state %d\n",pendingRequest->currentState);
+        // printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->data = 1;
         pendingRequest->currentState = TRANSFERING_MEMORY;
@@ -269,6 +271,8 @@ int tick()
                     coherComp->busReq(pendingRequest->brt,
                                           pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
 
+                    printf("freeing request busupdate\n");
+
                     free(pendingRequest);
                     pendingRequest = NULL;
                 }
@@ -284,6 +288,7 @@ int tick()
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
 
+                    // printf("freeing request in transferring memory\n");
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -299,6 +304,7 @@ int tick()
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
 
+                    // printf("freeing request in transferring cache\n");
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -330,7 +336,7 @@ int tick()
 int busReqCacheTransfer(uint64_t addr, int procNum)
 {
 
-    printf("cache transfer pendingReqest %p\n",pendingRequest);
+    // printf("cache transfer pendingReqest %p\n",pendingRequest);
     assert(pendingRequest);
 
     if (addr == pendingRequest->addr && procNum == pendingRequest->procNum)

@@ -794,7 +794,7 @@ snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentStat
             if (reqType == BUSUPDATE && reqProc == procNum) {
                 *ca = DATA_RECV;
                 if_shared |= 1 << procNum;
-                printf("Snoop - Case invalid_Modified -> modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
+                printf("Snoop - Case shared_clean_modified -> dragon_shared_modified  : reqType %d, cache action %d, current_state %d, addr %x, procNum %d\n", reqType, *ca, currentState, addr, procNum);
                 return DRAGON_SHARED_MODIFIED;
             }
             if_shared |= 1 << procNum;

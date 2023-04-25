@@ -96,7 +96,7 @@ int tick()
 {
     if (countDown > 0)
     {
-        printf("memory pendingReqest %p\n",pendingRequest);
+        // printf("memory pendingReqest %p\n",pendingRequest);
         assert(pendingRequest);
 
         // Check if one of the caches responded to the request that we are
