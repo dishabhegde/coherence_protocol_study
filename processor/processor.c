@@ -7,6 +7,10 @@
 #include "trace.h"
 #include "cache.h"
 #include "branch.h"
+#include "common.h"
+
+extern stats_t stats;
+extern int processorCount;
 
 trace_reader* tr = NULL;
 cache* cs = NULL;
@@ -15,8 +19,8 @@ branch* bs = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
 
-extern traffic;
-extern sentrequests;
+extern int traffic;
+extern int sentrequests;
 
 int* pendingMem = NULL;
 int* pendingBranch = NULL;
@@ -190,10 +194,19 @@ int finish(int outFd)
     int c = cs->si.finish(outFd);
     int b = bs->si.finish(outFd);
 
-    char buf[32];
-    size_t charCount = snprintf(buf, 32, "Ticks - %ld\n", tickCount);
+    // char buf[32];
+    // size_t charCount = snprintf(buf, 32, "Ticks - %ld\n", tickCount);
+    // charCount += snprintf(buf, 32, "Bus Requests - %d\n", inter_sim->stats.bus_reqs);
+    // charCount += snprintf(buf, 32, "Bus Requests - %d\n", inter_sim->stats.bus_reqs);
 
-    (void)!write(outFd, buf, charCount + 1);
+    // (void)!write(outFd, buf, charCount + 1);
+    FILE *fout = fdopen(outFd, "w");
+    fprintf(fout, "Ticks - %ld\n", tickCount);
+    fprintf(fout, "Bus Requests - %d\n", stats.bus_reqs);
+    fprintf(fout, "Mem Transfers - %d\n", stats.mem_transfers);
+    for (int i = 0; i < processorCount; i++) {
+        fprintf(fout, "Cumulative Wait Time Proc %d - %d\n", i, stats.cumulative_wait_time[i]);
+    }
 
     if (b || c)
         return 1;

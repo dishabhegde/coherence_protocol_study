@@ -5,6 +5,7 @@
 
 extern traffic;
 extern if_shared;
+extern stats_t stats;
 
 typedef enum _bus_req_state
 {
@@ -95,9 +96,11 @@ interconn* init(inter_sim_args* isa)
     }
 
     queuedRequests = malloc(sizeof(bus_req*) * processorCount);
+    stats.cumulative_wait_time = malloc(sizeof(int) * processorCount);
     for (int i = 0; i < processorCount; i++)
     {
         queuedRequests[i] = NULL;
+        stats.cumulative_wait_time[i] = 0;
     }
 
     self = malloc(sizeof(interconn));
@@ -107,6 +110,8 @@ interconn* init(inter_sim_args* isa)
     self->si.tick = tick;
     self->si.finish = finish;
     self->si.destroy = destroy;
+    stats.mem_transfers = 0;
+    stats.bus_reqs = 0;
 
     memComp = isa->memory;
     memComp->registerInterconnect(self);
@@ -142,6 +147,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
 
         pendingRequest = nextReq;
         countDown = CACHE_DELAY;
+        stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
 
         return;
     } 
@@ -154,6 +160,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for SHARED\n", procNum, addr);
         if (pendingRequest->brt != BUSUPDATE) {
             countDown = CACHE_TRANSFER;
+            stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_TRANSFER;
         }
         return;
     }
@@ -165,6 +172,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         pendingRequest->currentState = TRANSFERING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
+        stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_TRANSFER;
         return;
     } 
     // else if (brt == BUSUPDATE && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
@@ -242,6 +250,7 @@ int tick()
                     printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
+                    stats.cumulative_wait_time[pendingRequest->procNum] += countDown;
 
                     pendingRequest->currentState = WAITING_MEMORY;
                 } else {
@@ -287,7 +296,7 @@ int tick()
                     = (if_shared != 0) ? SHARED : brt;
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
-
+                stats.mem_transfers++;
                     // printf("freeing request in transferring memory\n");
                 free(pendingRequest);
                 pendingRequest = NULL;
@@ -318,7 +327,9 @@ int tick()
             if (queuedRequests[pos] != NULL)
             {
                 pendingRequest = deqBusRequest(pos);
+                stats.bus_reqs++;
                 countDown = CACHE_DELAY;
+                stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
                 pendingRequest->currentState = WAITING_CACHE;
         // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", pendingRequest->procNum, pendingRequest->addr);
 
@@ -336,7 +347,7 @@ int tick()
 int busReqCacheTransfer(uint64_t addr, int procNum)
 {
 
-    // printf("cache transfer pendingReqest %p\n",pendingRequest);
+    // printf("cache transfer pendingRequest %p\n",pendingRequest);
     assert(pendingRequest);
 
     if (addr == pendingRequest->addr && procNum == pendingRequest->procNum)

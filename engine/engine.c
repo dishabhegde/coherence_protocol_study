@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "engine.h"
+#include "common.h"
 
 int debug = 0;
 int CADSS_VERBOSE = 0;
@@ -16,6 +17,8 @@ int processorCount = 1;
 int traffic = 0;
 int if_shared = 0;
 int sentrequests = 0;
+
+stats_t stats;
 
 void printHelp(char* prog)
 {
