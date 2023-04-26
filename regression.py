@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-protocol_list = ['MI', 'MSI', 'MESI', 'MOESI', 'Dragon']
+protocol_list = ['MSI', 'MESI', 'MOESI', 'Dragon']
 
 def run_cmd(cmd):
     print(f"Running: {cmd}")
@@ -20,7 +20,7 @@ def output_dir(protocol):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--protocol', type=str, default='MSI', help='Protocol name (MI, MSI, MESI, MOESI, Dragon)')
+    parser.add_argument('--protocol', type=str, default='MSI', help='Protocol name (MSI, MESI, MOESI, Dragon or all)')
     # parser.add_argument('--no_cores', type=int, default='4', help='No of cores can be 4 or 8')
     return parser.parse_args()
 
