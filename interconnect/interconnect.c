@@ -129,7 +129,7 @@ void registerCoher(coher* cc)
 
 void busReq(bus_req_type brt, uint64_t addr, int procNum)
 {
-    printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
+    // printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
      if (pendingRequest != NULL)
     {
         // printf("pendingRequest type is %d\n ", pendingRequest->brt);
@@ -232,7 +232,7 @@ int tick()
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
             // if(pendingRequest->brt != BUSUPDATE) {
-                printf("Changing to TRANSFERRING_MEMORY\n");
+                // printf("Changing to TRANSFERRING_MEMORY\n");
                 pendingRequest->currentState = TRANSFERING_MEMORY;
                 // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 countDown = 0;
@@ -247,7 +247,7 @@ int tick()
                 // Make a request to memory.
                 assert(pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR || pendingRequest->brt == BUSUPDATE);
                 if(pendingRequest->brt != BUSUPDATE) {
-                    printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
+                    // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
                     stats.cumulative_wait_time[pendingRequest->procNum] += countDown;
@@ -280,7 +280,7 @@ int tick()
                     coherComp->busReq(pendingRequest->brt,
                                           pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
 
-                    printf("freeing request busupdate\n");
+                    // printf("freeing request busupdate\n");
 
                     free(pendingRequest);
                     pendingRequest = NULL;
@@ -308,8 +308,7 @@ int tick()
 		    // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
                     brt = SHARED;
 		        }
-                printf("snooping own bus request brt %d addr %x procNum %d\n", brt, pendingRequest->addr,
-                                  pendingRequest->procNum);
+                // printf("snooping own bus request brt %d addr %x procNum %d\n", brt, pendingRequest->addr, pendingRequest->procNum);
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
 
