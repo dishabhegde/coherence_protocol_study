@@ -1,6 +1,8 @@
 import argparse
 import os
 import subprocess
+import multiprocessing
+import threading
 
 protocol_list = ['MSI', 'MESI', 'MOESI', 'Dragon']
 
@@ -58,23 +60,30 @@ def run_trace(protocol, config_name, trace_type):
     
     output_dir(protocol)
 
-
+    cmd_list = []
     if(trace_type == 'fast'):
         for tr in fast_4:
             cmd = f"./cadss-engine -s {config_name} -t {trace_path}{tr} -n 4 -c coherentCache > {'result'}/{protocol}/{tr}.txt"
-            run_cmd(cmd)
+            # run_cmd(cmd)
+            cmd_list.append(cmd)
 
         for tr in fast_8:
             cmd = f"./cadss-engine -s {config_name} -t {trace_path}{tr} -n 8 -c coherentCache > {'result'}/{protocol}/{tr}.txt"
-            run_cmd(cmd)
+            # run_cmd(cmd)
+            cmd_list.append(cmd)
     else:
         for tr in trace_4:
             cmd = f"./cadss-engine -s {config_name} -t {trace_path}{tr} -n 4 -c coherentCache > {'result'}/{protocol}/{tr}.txt"
-            run_cmd(cmd)
+            # run_cmd(cmd)
+            cmd_list.append(cmd)
 
         for tr in trace_8:
             cmd = f"./cadss-engine -s {config_name} -t {trace_path}{tr} -n 8 -c coherentCache > {'result'}/{protocol}/{tr}.txt"
-            run_cmd(cmd)
+            # run_cmd(cmd)
+            cmd_list.append(cmd)
+
+    with multiprocessing.Pool() as pool:
+        results = pool.map(run_cmd, cmd_list)
 
 def main():
     args = parse_args()
@@ -92,7 +101,30 @@ def main():
     else:
         run_trace(args.protocol, config_name, trace_type)
 
+# def main():
+#     args = parse_args()
     
+#     trace_type = args.trace_type
+#     config_name = get_config(args.protocol)
+
+#     threads = []
+
+#     if(config_name == 'all'):
+#         for config in protocol_list:
+#             name = get_config(config)
+#             t = threading.Thread(target=run_trace, args=(config, name, trace_type))
+#             threads.append(t)
+#     else:
+#         t = threading.Thread(target=run_trace, args=(args.protocol, config_name, trace_type))
+#         threads.append(t)
+
+#     # Start all threads
+#     for t in threads:
+#         t.start()
+
+#     # Wait for all threads to finish
+#     for t in threads:
+#         t.join()
 
 if __name__ == '__main__':
     main()
