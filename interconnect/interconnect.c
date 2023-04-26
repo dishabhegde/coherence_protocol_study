@@ -130,6 +130,8 @@ void registerCoher(coher* cc)
 void busReq(bus_req_type brt, uint64_t addr, int procNum)
 {
     // printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
+
+    stats.bus_reqs++;
      if (pendingRequest != NULL)
     {
         // printf("pendingRequest type is %d\n ", pendingRequest->brt);
@@ -326,7 +328,6 @@ int tick()
             if (queuedRequests[pos] != NULL)
             {
                 pendingRequest = deqBusRequest(pos);
-                stats.bus_reqs++;
                 countDown = CACHE_DELAY;
                 stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
                 pendingRequest->currentState = WAITING_CACHE;
