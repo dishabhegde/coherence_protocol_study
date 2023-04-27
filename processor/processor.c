@@ -202,6 +202,11 @@ int finish(int outFd)
     // (void)!write(outFd, buf, charCount + 1);
     FILE *fout = fdopen(outFd, "w");
     fprintf(fout, "Ticks - %ld\n", tickCount);
+    fprintf(fout, "BusRd - %ld\n", stats.per_req_stats.busrd);
+    fprintf(fout, "BusWr - %ld\n", stats.per_req_stats.buswr);
+    fprintf(fout, "BusUpd - %ld\n", stats.per_req_stats.busupd);
+    fprintf(fout, "Shared - %ld\n", stats.per_req_stats.shared);
+    fprintf(fout, "Data - %ld\n", stats.per_req_stats.data);
     fprintf(fout, "Bus Requests - %d\n", stats.bus_reqs);
     fprintf(fout, "Mem Transfers - %d\n", stats.mem_transfers);
     for (int i = 0; i < processorCount; i++) {
