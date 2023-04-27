@@ -25,9 +25,18 @@ typedef struct _sim_interface {
 extern int CADSS_VERBOSE;
 extern int processorCount;
 
+typedef struct {
+    int busrd;
+    int buswr;
+    int busupd;
+    int shared;
+    int data;
+} bus_req_stats_t;
+
 typedef struct{
     int mem_transfers;
     int bus_reqs;
+    bus_req_stats_t per_req_stats;
     int *cumulative_wait_time;
 }stats_t;
 

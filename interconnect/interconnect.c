@@ -112,6 +112,11 @@ interconn* init(inter_sim_args* isa)
     self->si.destroy = destroy;
     stats.mem_transfers = 0;
     stats.bus_reqs = 0;
+    stats.per_req_stats.busrd = 0;
+    stats.per_req_stats.buswr = 0;
+    stats.per_req_stats.busupd = 0;
+    stats.per_req_stats.shared = 0;
+    stats.per_req_stats.data = 0;
 
     memComp = isa->memory;
     memComp->registerInterconnect(self);
@@ -132,6 +137,25 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     // printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
 
     stats.bus_reqs++;
+    switch (brt) {
+        case BUSRD:
+            stats.per_req_stats.busrd++;
+            break;
+        case BUSWR:
+            stats.per_req_stats.buswr++;
+            break;
+        case BUSUPDATE:
+            stats.per_req_stats.busupd++;
+            break;
+        case SHARED:
+            stats.per_req_stats.shared++;
+            break;
+        case DATA:
+            stats.per_req_stats.data++;
+            break;
+        default:
+            break;
+    }
      if (pendingRequest != NULL)
     {
         // printf("pendingRequest type is %d\n ", pendingRequest->brt);
