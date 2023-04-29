@@ -2,9 +2,11 @@
 
 #include <memory.h>
 #include <interconnect.h>
+#include <stdbool.h>
 
-extern traffic;
-extern if_shared;
+extern int traffic;
+extern int if_shared;
+extern bool redo;
 extern stats_t stats;
 
 typedef enum _bus_req_state
@@ -241,6 +243,7 @@ int pendingRequestCount() {
 int tick()
 {
     memComp->si.tick();
+    redo = false;
     // // printf("interconnect tick \n");
     if (countDown > 0)
     {
@@ -294,6 +297,17 @@ int tick()
                                           pendingRequest->addr, i, pendingRequest->procNum);
                     } else {
                         if_shared &= ~(1 << pendingRequest->procNum);
+                    }
+                }
+                if (redo) {
+                    for (int i = 0; i < processorCount; i++)
+                    {
+                        if (pendingRequest->procNum != i)
+                        {
+                            // printf("proc %d\n", i);
+                            coherComp->busReq(REDO,
+                                            pendingRequest->addr, i, pendingRequest->procNum);
+                        }
                     }
                 }
 

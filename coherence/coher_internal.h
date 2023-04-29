@@ -32,7 +32,8 @@ typedef enum _coherence_scheme
     MESI,
     MOESI,
     MESIF,
-    DRAGON
+    DRAGON,
+    HYBRID_DRAGON
 } coherence_scheme;
 
 coherence_states
@@ -64,6 +65,12 @@ cacheDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
         uint64_t addr, int procNum);
 coherence_states
 snoopDragon(bus_req_type reqType, cache_action* ca, coherence_states currentState,
+        uint64_t addr, int procNum, int reqProc);
+coherence_states
+cacheHybridDragon(uint8_t is_read, uint8_t* permAvail, coherence_states currentState,
+        uint64_t addr, int procNum);
+coherence_states
+snoopHybridDragon(bus_req_type reqType, cache_action* ca, coherence_states currentState,
         uint64_t addr, int procNum, int reqProc);
 
 #endif

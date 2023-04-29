@@ -212,7 +212,7 @@ int finish(int outFd)
     for (int i = 0; i < processorCount; i++) {
         fprintf(fout, "Cumulative Wait Time Proc %d - %d\n", i, stats.cumulative_wait_time[i]);
     }
-
+    fclose(fout);
     if (b || c)
         return 1;
     return 0;

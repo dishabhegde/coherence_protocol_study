@@ -11,7 +11,8 @@ typedef enum _bus_req_type {
     DATA,
     SHARED,
     BUSUPDATE,
-    MEMORY
+    MEMORY,
+    REDO
 } bus_req_type;
 
 #include "coherence.h"
