@@ -45,6 +45,8 @@ coher* init(coher_sim_args* csa)
                     cs = MESIF;
                 else if (strcmp(optarg, "Dragon") == 0)
                     cs = DRAGON;
+                else if (strcmp(optarg, "HybridDragon") == 0)
+                    cs = HYBRID_DRAGON;
                 else {
                     fprintf(stderr, "Invalid coherence scheme: %s\n", optarg);
                     exit(EXIT_FAILURE);
