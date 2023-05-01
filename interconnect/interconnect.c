@@ -158,24 +158,23 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         default:
             break;
     }
-     if (pendingRequest != NULL)
-    {
-        // printf("pendingRequest type is %d\n ", pendingRequest->brt);
-    }
     if (pendingRequest == NULL)
     {
         assert(brt != SHARED);
+        assert(brt != DATA);
 
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
-        nextReq->currentState = WAITING_CACHE;
+        nextReq->currentState = QUEUED;
         // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", procNum, addr);
         nextReq->addr = addr;
         nextReq->procNum = procNum;
 
-        pendingRequest = nextReq;
-        countDown = CACHE_DELAY;
-        stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
+        enqBusRequest(nextReq, procNum);
+
+        // pendingRequest = nextReq;
+        // countDown = CACHE_DELAY;
+        // stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
 
         return;
     } 
@@ -203,16 +202,6 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_TRANSFER;
         return;
     } 
-    // else if (brt == BUSUPDATE && pendingRequest->addr == addr && pendingRequest->currentState == WAITING_MEMORY)
-    // {
-    //     printf("pending request state %d\n",pendingRequest->currentState);
-    //     assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_CACHE );
-    //     pendingRequest->shared = 1;
-    //     pendingRequest->currentState = TRANSFERING_CACHE;
-    //     // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for BUSUPDATE\n", procNum, addr);
-    //     countDown = CACHE_TRANSFER;
-    //     return;
-    // }
     else
     {
         assert(brt != SHARED);
@@ -250,25 +239,16 @@ int tick()
         assert(pendingRequest != NULL);    
         traffic = pendingRequestCount();
 
-        if (traffic > 0) {
-            // printf("traffic count: %d\n", traffic);
-        }
         countDown--;
-        // printf("countdown %d\n", countDown);
         // If the count-down has elapsed (or there hasn't been a
         // cache-to-cache transfer, the memory will respond with
         // the data.
         if (memComp->dataAvail(pendingRequest->addr, pendingRequest->procNum))
         {
-            // if(pendingRequest->brt != BUSUPDATE) {
-                // printf("Changing to TRANSFERRING_MEMORY\n");
                 pendingRequest->currentState = TRANSFERING_MEMORY;
-                // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                 countDown = 0;
-            // }
-            // countDown = 0;
         }
-
+        // printf("Coundown %d\n", countDown);
         if (countDown == 0)
         {
             if (pendingRequest->currentState == WAITING_CACHE)
@@ -285,7 +265,6 @@ int tick()
                 } else {
                     pendingRequest->currentState = WAITING_UPDATE;
                 }
-		// printf("All snoop reqType %d\n", pendingRequest->brt);
 
                 // The processors will snoop for this request as well.
                 for (int i = 0; i < processorCount; i++)
@@ -313,7 +292,7 @@ int tick()
 
                 if (pendingRequest->data == 1)
                 {
-		    // printf("changing brt to DATA for %x\n", pendingRequest->addr);
+		        // printf("changing brt to DATA for %x\n", pendingRequest->addr);
                     pendingRequest->brt = DATA;
                 }
                 if (pendingRequest->brt == BUSUPDATE) {
@@ -345,7 +324,7 @@ int tick()
             {
                 bus_req_type brt = pendingRequest->brt;
                 if (pendingRequest->shared == 1) {
-		    // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
+		            // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
                     brt = SHARED;
 		        }
                 // printf("snooping own bus request brt %d addr %x procNum %d\n", brt, pendingRequest->addr, pendingRequest->procNum);
@@ -365,18 +344,16 @@ int tick()
             int pos = (i + lastProc) % processorCount;
             if (queuedRequests[pos] != NULL)
             {
+                printf("inside pos %d\n", pos);
                 pendingRequest = deqBusRequest(pos);
                 countDown = CACHE_DELAY;
                 stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
                 pendingRequest->currentState = WAITING_CACHE;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", pendingRequest->procNum, pendingRequest->addr);
-
                 lastProc = (pos + 1) % processorCount;
                 break;
             }
         }
     }
-    // if_shared = 0;
     return 0;
 }
 
