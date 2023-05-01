@@ -52,10 +52,14 @@ def write_excel():
             col = 0
             for h in range(len(header)):
                 # worksheet.write(row, h, header[h])
-                worksheet.merge_range(row, h, row + len(protocols) - 1, h, header[h])
+                worksheet.merge_range(row, h*len(subheader) + 1, row, (h + 1)len(subheader), header[h])
+                row = row+1
+                for sh in range(len(subheader)):
+                    worksheet.write(row, h*len(subheader) + 1 + sh, header[h])
+                row = row -1
             row = row+1
         
-            for h in range(len(subheader)):
+            for sh in range(len(subheader)):
                 worksheet.write(row, h, header[h])
             row = row+1
             for line in metric_data:
