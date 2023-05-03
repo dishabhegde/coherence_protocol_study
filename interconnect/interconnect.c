@@ -39,7 +39,7 @@ memory* memComp;
 int CADSS_VERBOSE = 0;
 int processorCount = 1;
 
-const int CACHE_DELAY = 10;
+const int CACHE_DELAY = 5;
 const int CACHE_TRANSFER = 10;
 
 void registerCoher(coher* cc);
@@ -166,7 +166,6 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = QUEUED;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_CACHE\n", procNum, addr);
         nextReq->addr = addr;
         nextReq->procNum = procNum;
 
@@ -180,11 +179,9 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     } 
     else if (brt == SHARED && pendingRequest->addr == addr)
     {
-        // printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->shared = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for SHARED\n", procNum, addr);
         if (pendingRequest->brt != BUSUPDATE) {
             countDown = CACHE_TRANSFER;
             stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_TRANSFER;
@@ -193,11 +190,9 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     }
     else if (brt == DATA && pendingRequest->addr == addr)
     {
-        // printf("pending request state %d\n",pendingRequest->currentState);
         assert(pendingRequest->currentState == WAITING_MEMORY || pendingRequest->currentState == WAITING_UPDATE);
         pendingRequest->data = 1;
         pendingRequest->currentState = TRANSFERING_CACHE;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> TRANSFERRING_CACHE for DATA\n", procNum, addr);
         countDown = CACHE_TRANSFER;
         stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_TRANSFER;
         return;
@@ -209,7 +204,6 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = QUEUED;
-        // printf("proc %d pendingRequest addr 0x%lx current state -> QUEUED\n", procNum, addr);
         nextReq->addr = addr;
         nextReq->procNum = procNum;
 
@@ -233,7 +227,6 @@ int tick()
 {
     memComp->si.tick();
     redo = false;
-    // // printf("interconnect tick \n");
     if (countDown > 0)
     {
         assert(pendingRequest != NULL);    
@@ -248,7 +241,6 @@ int tick()
                 pendingRequest->currentState = TRANSFERING_MEMORY;
                 countDown = 0;
         }
-        // printf("Coundown %d\n", countDown);
         if (countDown == 0)
         {
             if (pendingRequest->currentState == WAITING_CACHE)
@@ -256,7 +248,6 @@ int tick()
                 // Make a request to memory.
                 assert(pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR || pendingRequest->brt == BUSUPDATE);
                 if(pendingRequest->brt != BUSUPDATE) {
-                    // printf("proc %d pendingRequest addr 0x%lx current state -> WAITING_MEMORY\n", pendingRequest->procNum, pendingRequest->addr);
                     countDown = memComp->busReq(pendingRequest->addr,
                                                 pendingRequest->procNum);
                     stats.cumulative_wait_time[pendingRequest->procNum] += countDown;
@@ -344,7 +335,7 @@ int tick()
             int pos = (i + lastProc) % processorCount;
             if (queuedRequests[pos] != NULL)
             {
-                printf("inside pos %d\n", pos);
+                // printf("inside pos %d\n", pos);
                 pendingRequest = deqBusRequest(pos);
                 countDown = CACHE_DELAY;
                 stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
@@ -361,8 +352,6 @@ int tick()
 // was satisfied by a cache-to-cache transfer.
 int busReqCacheTransfer(uint64_t addr, int procNum)
 {
-
-    // printf("cache transfer pendingRequest %p\n",pendingRequest);
     assert(pendingRequest);
 
     if (addr == pendingRequest->addr && procNum == pendingRequest->procNum)
