@@ -20,14 +20,12 @@ def output_dir(protocol):
             file_path = os.path.join(res_path, file_name)
             os.remove(file_path)
     else :
-        # os.mkdir('result')
         os.mkdir(res_path)
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--protocol', type=str, default='MSI', help='Protocol name (MSI, MESI, MOESI, Dragon, HybridDragon or all)')
     parser.add_argument('--trace_type', type=str, default='fast', help='fast or slow')
-    # parser.add_argument('--no_cores', type=int, default='4', help='No of cores can be 4 or 8')
     return parser.parse_args()
 
 def get_config(protocol):
@@ -53,7 +51,7 @@ def run_trace(protocol, config_name, trace_type):
     trace_path = '/afs/cs.cmu.edu/academic/class/15346-s22/public/traces/coher/'
 
     trace_4 = ['blackscholes_4_simsmall.taskgraph', 'dedup_4_simsmall.taskgraph', 'fluidanimate_4_simsmall.taskgraph', 'splash2x.lu_cb_4_simsmall.taskgraph', 'splash2x.lu_ncb_4_simsmall.taskgraph', 'splash2x.volrend_4_simsmall.taskgraph', 'swaptions_4_simsmall.taskgraph']
-    trace_8 = ['dedup_8_simsmall.taskgraph', 'splash2x.lu_cb_8_simsmall.taskgraph', 'splash2x.lu_ncb_8_simsmall.taskgraph', 'splash2x.volrend_8_simsmall.taskgraph', 'x264_8_simsmall.taskgraph']
+    trace_8 = ['dedup_8_simsmall.taskgraph', 'splash2x.lu_cb_8_simsmall.taskgraph', 'splash2x.lu_ncb_8_simsmall.taskgraph', 'splash2x.volrend_8_simsmall.taskgraph']
 
     fast_4 = ['blackscholes_4_simsmall.taskgraph', 'dedup_4_simsmall.taskgraph', 'splash2x.volrend_4_simsmall.taskgraph', 'swaptions_4_simsmall.taskgraph']
     fast_8 = ['splash2x.volrend_8_simsmall.taskgraph', 'x264_8_simsmall.taskgraph']

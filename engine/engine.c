@@ -19,7 +19,7 @@ int traffic = 0;
 uint32_t if_shared = 0;
 int sentrequests = 0;
 bool redo = false;
-uint32_t sharing_threshold = 2;
+uint32_t sharing_threshold = 1;
 
 stats_t stats;
 
@@ -177,6 +177,8 @@ int main(int argc, char** argv)
                 break;
         }
     }
+
+    sharing_threshold = processorCount/2;
     
     trace = loadSim("trace", "trace");
     trace_sim_args tsa;

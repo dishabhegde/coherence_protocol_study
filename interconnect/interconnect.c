@@ -136,8 +136,6 @@ void registerCoher(coher* cc)
 
 void busReq(bus_req_type brt, uint64_t addr, int procNum)
 {
-    // printf("This is interconnect bus request type %d, addr %lx and procNum %d\n", brt, addr, procNum);
-
     stats.bus_reqs++;
     switch (brt) {
         case BUSRD:
@@ -170,10 +168,6 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         nextReq->procNum = procNum;
 
         enqBusRequest(nextReq, procNum);
-
-        // pendingRequest = nextReq;
-        // countDown = CACHE_DELAY;
-        // stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;
 
         return;
     } 
@@ -262,7 +256,6 @@ int tick()
                 {
                     if (pendingRequest->procNum != i)
                     {
-                        // printf("proc %d\n", i);
                         coherComp->busReq(pendingRequest->brt,
                                           pendingRequest->addr, i, pendingRequest->procNum);
                     } else {
@@ -274,7 +267,6 @@ int tick()
                     {
                         if (pendingRequest->procNum != i)
                         {
-                            // printf("proc %d\n", i);
                             coherComp->busReq(REDO,
                                             pendingRequest->addr, i, pendingRequest->procNum);
                         }
@@ -283,14 +275,11 @@ int tick()
 
                 if (pendingRequest->data == 1)
                 {
-		        // printf("changing brt to DATA for %x\n", pendingRequest->addr);
                     pendingRequest->brt = DATA;
                 }
                 if (pendingRequest->brt == BUSUPDATE) {
                     coherComp->busReq(pendingRequest->brt,
                                           pendingRequest->addr, pendingRequest->procNum, pendingRequest->procNum);
-
-                    // printf("freeing request busupdate\n");
 
                     free(pendingRequest);
                     pendingRequest = NULL;
@@ -298,8 +287,6 @@ int tick()
             }
             else if (pendingRequest->currentState == TRANSFERING_MEMORY)
             {
-		// printf("changing brt to %d for %x\n", (pendingRequest->shared == 1) ? SHARED : DATA, pendingRequest->addr);
-                // printf("If_shared %d\n", if_shared);
                 bus_req_type brt
                     = (pendingRequest->shared == 1) ? SHARED : DATA;
                 brt
@@ -307,7 +294,6 @@ int tick()
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
                 stats.mem_transfers++;
-                    // printf("freeing request in transferring memory\n");
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -315,14 +301,10 @@ int tick()
             {
                 bus_req_type brt = pendingRequest->brt;
                 if (pendingRequest->shared == 1) {
-		            // printf("changing brt to SHARED for %x\n", pendingRequest->addr);
                     brt = SHARED;
 		        }
-                // printf("snooping own bus request brt %d addr %x procNum %d\n", brt, pendingRequest->addr, pendingRequest->procNum);
                 coherComp->busReq(brt, pendingRequest->addr,
                                   pendingRequest->procNum, pendingRequest->procNum);
-
-                    // printf("freeing request in transferring cache\n");
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -335,7 +317,6 @@ int tick()
             int pos = (i + lastProc) % processorCount;
             if (queuedRequests[pos] != NULL)
             {
-                // printf("inside pos %d\n", pos);
                 pendingRequest = deqBusRequest(pos);
                 countDown = CACHE_DELAY;
                 stats.cumulative_wait_time[pendingRequest->procNum] += CACHE_DELAY;

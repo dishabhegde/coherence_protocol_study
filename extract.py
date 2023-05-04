@@ -11,15 +11,14 @@ bench = set()
 def fix_cumulative(data):
     total_val = 0
     del_list = []
-    new_list = []
     for k in data.keys():
         if "Cumulative" in k:
-            new_list.append(data[k])
+            total_val = total_val + data[k]
             del_list.append(k)
     for x in del_list:
         data.pop(x)
             # data.pop(k)
-    data["Cumulative"] = new_list
+    data["Cumulative"] = total_val
     return data
 
 if os.path.isfile("output.xlsx"):
@@ -29,72 +28,30 @@ workbook = xlsxwriter.Workbook('output1.xlsx')
 
 def write_excel():
     for metric in metrics:
-        if metric == "Cumulative":
-            header =[]
-            subheader =[]
-            metric_data = []
-            header.append("Benchmarks")
+        header =[]
+        metric_data = []
+        header.append("Benchmarks")
+        for x in protocols:
+            header.append(x)
+        worksheet = workbook.add_worksheet(metric)
+        for b in bench:
+            row = []
+            row.append(b)
             for proto in protocols:
-                header.append(x)
                 if b in proto_dict[proto].keys():
-                    for cnt in range(len(proto_dict[proto][b][metric])):
-                        subheader.append(cnt)
-            worksheet = workbook.add_worksheet(metric)
-            for b in bench:
-                row = []
-                row.append(b)
-                for proto in protocols:
-                    if b in proto_dict[proto].keys():
-                        for data in proto_dict[proto][b][metric]:
-                            row.append(data)
-                metric_data.append(row)
-            row = 0
-            col = 0
-            for h in range(len(header)):
-                # worksheet.write(row, h, header[h])
-                worksheet.merge_range(row, h*len(subheader) + 1, row, (h + 1)len(subheader), header[h])
-                row = row+1
-                for sh in range(len(subheader)):
-                    worksheet.write(row, h*len(subheader) + 1 + sh, header[h])
-                row = row -1
-            row = row+1
-        
-            for sh in range(len(subheader)):
-                worksheet.write(row, h, header[h])
-            row = row+1
-            for line in metric_data:
-                for h in range(len(line)):
-                    worksheet.write(row, h, line[h])
-                row = row + 1
-        else:
-            header =[]
-            metric_data = []
-            header.append("Benchmarks")
-            for x in protocols:
-                header.append(x)
-            worksheet = workbook.add_worksheet(metric)
-            for b in bench:
-                row = []
-                row.append(b)
-                for proto in protocols:
-                    if b in proto_dict[proto].keys():
-                        row.append(proto_dict[proto][b][metric])
-                metric_data.append(row)
-            row = 0
-            col = 0
-            for h in range(len(header)):
-                worksheet.write(row, h, header[h])
-            row = row+1
-        
-            for line in metric_data:
-                for h in range(len(line)):
-                    worksheet.write(row, h, line[h])
-                row = row + 1
+                    row.append(proto_dict[proto][b][metric])
+            metric_data.append(row)
+        row = 0
+        col = 0
+        for h in range(len(header)):
+            worksheet.write(row, h, header[h])
+        row = row+1
+    
+        for line in metric_data:
+            for h in range(len(line)):
+                worksheet.write(row, h, line[h])
+            row = row + 1
 
-        
-    # print(metric)
-    # print(header)
-    # print(row)
 
     
 def generate_proto_dict():
@@ -121,11 +78,8 @@ def generate_proto_dict():
 
 def main():
     generate_proto_dict()
-    # print(proto_dict)
     write_excel()
-    # print(bench)
     workbook.close()
 
 if __name__ == "__main__":
     main()
-
